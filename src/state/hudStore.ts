@@ -20,6 +20,8 @@ export const EMPTY_HUD: HudSnapshot = {
   stuntScore: 0,
   comboLabel: null,
   comboTimer: 0,
+  drafting: false,
+  flash: 0,
 };
 
 interface HudState extends HudSnapshot {

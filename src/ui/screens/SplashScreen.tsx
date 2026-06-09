@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AudioManager } from '../../audio/AudioManager';
 import { useUIStore } from '../../state/uiStore';
 import { Colors } from '../../theme/colors';
 import { Type } from '../../theme/typography';
@@ -24,7 +25,13 @@ export default function SplashScreen() {
 
   return (
     <Backdrop>
-      <Pressable style={styles.root} onPress={() => go('menu')}>
+      <Pressable
+        style={styles.root}
+        onPress={() => {
+          AudioManager.unlock();
+          go('menu');
+        }}
+      >
         <Animated.View style={{ transform: [{ translateY: rise }], alignItems: 'center' }}>
           <Text style={styles.kicker}>PREMIUM ARCADE RACING</Text>
           <Text style={styles.nitro}>NITRO</Text>

@@ -99,4 +99,6 @@ export interface HudSnapshot {
   stuntScore: number;
   comboLabel: string | null;
   comboTimer: number;
+  drafting: boolean;
+  flash: number; // 0..1 crash flash intensity
 }

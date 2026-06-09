@@ -62,6 +62,21 @@ export default function SettingsScreen() {
 
           <View style={styles.divider} />
 
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.rowLabel}>SOUND</Text>
+              <Text style={styles.rowHint}>Engine, nitro & UI audio (web)</Text>
+            </View>
+            <Switch
+              value={settings.sound}
+              onValueChange={(v) => setSetting('sound', v)}
+              trackColor={{ true: Colors.primary, false: '#333' }}
+              thumbColor="#fff"
+            />
+          </View>
+
+          <View style={styles.divider} />
+
           <View style={styles.rowCol}>
             <Text style={styles.rowLabel}>DEFAULT CAMERA</Text>
             <Segmented

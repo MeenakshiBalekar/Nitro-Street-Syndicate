@@ -6,6 +6,7 @@ const KEY = 'nss.save.v1';
 
 interface Settings {
   haptics: boolean;
+  sound: boolean;
   defaultCam: 'chase' | 'cockpit';
   quality: 'auto' | 'high' | 'low';
 }
@@ -35,7 +36,7 @@ const DEFAULTS: Persisted = {
   ownedBikes: ['striker'],
   selectedBikeId: 'striker',
   bestTimes: {},
-  settings: { haptics: true, defaultCam: 'chase', quality: 'auto' },
+  settings: { haptics: true, sound: true, defaultCam: 'chase', quality: 'auto' },
   lastDailyClaim: 0,
 };
 

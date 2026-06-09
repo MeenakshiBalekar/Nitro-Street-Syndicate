@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+import { AudioManager } from '../../audio/AudioManager';
 import { getBike } from '../../game/bikes';
 import { input, requestCameraToggle, resetInput } from '../../game/input';
 import { RaceController } from '../../game/race';
@@ -42,7 +43,7 @@ export default function RaceScreen() {
 
   // Pause should freeze the simulation without unmounting the GL surface.
   useEffect(() => {
-    (controller as RaceController & { paused?: boolean }).paused = paused;
+    controller.paused = paused;
   }, [controller, paused]);
 
   // Keyboard controls (web).
@@ -79,7 +80,13 @@ export default function RaceScreen() {
     };
   }, []);
 
-  useEffect(() => () => resetInput(), []);
+  useEffect(
+    () => () => {
+      resetInput();
+      AudioManager.stopEngine();
+    },
+    [],
+  );
 
   const handleFinish = () => {
     const order = controller.results();
@@ -101,6 +108,7 @@ export default function RaceScreen() {
 
   const quit = () => {
     resetInput();
+    AudioManager.stopEngine();
     setPaused(false);
     go('menu');
   };

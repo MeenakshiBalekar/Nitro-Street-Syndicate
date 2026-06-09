@@ -6,6 +6,7 @@ import { Colors } from '../../theme/colors';
 import { Type } from '../../theme/typography';
 import { formatTime, ordinal } from '../../util/math';
 import Minimap from './Minimap';
+import SpeedFX from './SpeedFX';
 import Speedometer from './Speedometer';
 import TouchControls from './TouchControls';
 
@@ -67,9 +68,20 @@ function Countdown() {
   );
 }
 
+function Draft() {
+  const drafting = useHudStore((s) => s.drafting);
+  if (!drafting) return null;
+  return (
+    <View style={styles.draft} pointerEvents="none">
+      <Text style={styles.draftText}>▲ SLIPSTREAM</Text>
+    </View>
+  );
+}
+
 export default function HUD({ controller, onPause }: Props) {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <SpeedFX />
       <View style={styles.topLeft} pointerEvents="none">
         <Minimap controller={controller} />
       </View>
@@ -84,6 +96,8 @@ export default function HUD({ controller, onPause }: Props) {
         <Combo />
         <Countdown />
       </View>
+
+      <Draft />
 
       <View style={styles.bottomCenter} pointerEvents="none">
         <Speedometer />
@@ -148,4 +162,20 @@ const styles = StyleSheet.create({
   },
   countSub: { fontFamily: Type.display, fontSize: Type.size.lg, fontWeight: '900', color: Colors.text, letterSpacing: 4 },
   bottomCenter: { position: 'absolute', bottom: 18, left: 0, right: 0, alignItems: 'center' },
+  draft: { position: 'absolute', bottom: 118, left: 0, right: 0, alignItems: 'center' },
+  draftText: {
+    fontFamily: Type.display,
+    fontSize: Type.size.md,
+    fontWeight: '900',
+    color: Colors.cyan,
+    letterSpacing: 3,
+    backgroundColor: 'rgba(8,12,22,0.6)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.cyan,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    textShadowColor: 'rgba(46,230,214,0.7)',
+    textShadowRadius: 8,
+  },
 });

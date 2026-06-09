@@ -57,16 +57,20 @@ export class RaceController {
   readonly totalLaps = TOTAL_LAPS;
 
   phase: RacePhase = 'countdown';
+  paused = false; // set by the race screen; the render loop skips ticking while true
   countdownMs = COUNTDOWN_MS;
   clockMs = 0;
   comboLabel: string | null = null;
   comboTimer = 0;
   shake = 0; // transient camera-shake request (0..1), read by the view
+  flash = 0; // transient crash-flash intensity (0..1)
+  drafting = false; // player currently in a slipstream
 
   readonly player: RacerState;
   private ai: { racer: RacerState; driver: AIDriver }[] = [];
   private nearActive: boolean[];
   private hitCooldown = 0;
+  private draftLatch = false;
 
   constructor(playerBikeId: string) {
     // Pole for the player, AI fill the rest of the grid slightly behind.
@@ -149,6 +153,7 @@ export class RaceController {
         p.nitro = clamp01(p.nitro - 0.1);
         this.hitCooldown = 0.8;
         this.shake = 1;
+        this.flash = 1;
         this.setCombo('CRASH!');
         this.nearActive[i] = true;
       } else if (longNear && nearLane && !hitLane) {
@@ -162,6 +167,31 @@ export class RaceController {
         this.nearActive[i] = false;
       }
     }
+  }
+
+  // Slipstream: tucking into the wake just behind another racer grants a draft
+  // boost and a trickle of nitro — the core overtaking mechanic.
+  private resolveDraft(dt: number): void {
+    const L = this.track.length;
+    const p = this.player;
+    this.drafting = false;
+    for (const r of this.racers) {
+      if (r === p) continue;
+      let ds = mod(r.s - p.s, L);
+      if (ds > L / 2) ds -= L; // + means r is ahead of the player
+      if (ds > 1.5 && ds < 16 && Math.abs(p.lateral - r.lateral) < 3.2) {
+        this.drafting = true;
+        const cfg = getBike(p.bikeId);
+        p.speed = Math.min(cfg.topSpeed * 1.18, p.speed + 55 * dt);
+        p.nitro = clamp01(p.nitro + 0.05 * dt);
+        if (!this.draftLatch) {
+          this.draftLatch = true;
+          this.setCombo('SLIPSTREAM');
+        }
+        break;
+      }
+    }
+    if (!this.drafting) this.draftLatch = false;
   }
 
   tick(dt: number, input: InputState = sharedInput): void {
@@ -208,6 +238,7 @@ export class RaceController {
 
     this.traffic.update(dt, this.player.s);
     this.resolveTraffic(dt);
+    this.resolveDraft(dt);
 
     for (const r of this.racers) {
       this.wrapLaps(r);
@@ -220,6 +251,7 @@ export class RaceController {
       if (this.comboTimer <= 0) this.comboLabel = null;
     }
     if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 2.5);
+    if (this.flash > 0) this.flash = Math.max(0, this.flash - dt * 2);
 
     if (this.player.finished) {
       this.phase = 'finished';
@@ -246,6 +278,8 @@ export class RaceController {
       stuntScore: Math.round(p.stuntScore),
       comboLabel: this.comboLabel,
       comboTimer: this.comboTimer,
+      drafting: this.drafting,
+      flash: this.flash,
     };
   }
 

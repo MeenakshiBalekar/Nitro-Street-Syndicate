@@ -96,18 +96,23 @@ src/
 
 ## Status — honest scope
 
-✅ **Implemented & verified (compiles + web bundle builds):** splash, main menu, garage with
-buy/equip, settings, single-player race vs AI, countdown, 3-lap/placement, nitro, wheelie,
-ramps/jumps, traffic + near-miss + collisions, chase/cockpit camera, speed-FOV + crash shake,
-HUD (minimap, speed cluster, lap/time/position, combos), pause/resume/restart, results +
-rematch, currency rewards, unlock progression, daily bonus, persistent save.
+✅ **Phase 1 — core (verified: compiles + web bundle builds + headless sim passes):** splash,
+main menu, garage with buy/equip, settings, single-player race vs AI, countdown, 3-lap/placement,
+nitro, wheelie, ramps/jumps, traffic + near-miss + collisions, chase/cockpit camera, speed-FOV +
+crash shake, HUD (minimap, speed cluster, lap/time/position, combos), pause/resume/restart,
+results + rematch, currency rewards, unlock progression, daily bonus, persistent save.
+
+✅ **Phase 2 — premium feel:** procedural engine audio (pitch-by-speed) + nitro/crash/UI SFX
+(Web Audio, web only), nitro exhaust flame, pooled skid-dust / spark particles, 2D speed-lines +
+cinematic vignette, **slipstream** drafting boost, crash flash, and per-screen entrance transitions.
 
 🟡 **Stubbed on purpose (architecture seam present):**
 
 - **Online 4-player** — `src/net/Multiplayer.ts` defines the transport interface; the race is
   built host-authoritative so a real backend (Photon / Colyseus / Nakama / WS relay) drops in
   without touching gameplay. The menu's **ONLINE** button explains this.
-- **Audio** — `src/audio/AudioManager.ts` is a safe no-op; wire it to `expo-av` + sound files.
+- **Native audio** — the synthesized engine/SFX run on web via the Web Audio API; on iOS/Android
+  `AudioManager` is a safe no-op. Wire it to `expo-audio` + sample files to enable on device.
 
 The 3D world uses **procedural primitives** (no external model/texture assets), which keeps the
 bundle lean and the project 100% buildable from source.
@@ -116,9 +121,9 @@ bundle lean and the project 100% buildable from source.
 
 ## Roadmap (phased, per the design brief)
 
-- **Phase 1 — Core (this repo):** stable race loop, premium HUD, 4 bikes, nitro/stunts, traffic.
-- **Phase 2 — Premium feel:** engine audio (pitch-by-speed), nitro/skid VFX, speed lines,
-  slipstream, richer crash feedback, UI transitions, more reward depth.
+- **Phase 1 — Core ✅:** stable race loop, premium HUD, 4 bikes, nitro/stunts, traffic.
+- **Phase 2 — Premium feel ✅ (web):** engine audio (pitch-by-speed), nitro/skid VFX, speed lines,
+  slipstream, crash feedback, UI transitions. Remaining: native audio samples.
 - **Phase 3 — Wow:** online 4-player rooms + matchmaking, ghost racing, replay clips, day/night
   & weather, custom skins/decals, ranked leaderboards, and a short free-roam map.
 

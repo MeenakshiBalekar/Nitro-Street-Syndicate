@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { AudioManager } from '../../audio/AudioManager';
 import { Colors } from '../../theme/colors';
 import { Type } from '../../theme/typography';
 
@@ -26,7 +27,15 @@ export default function GlossyButton({ label, onPress, variant = 'primary', sub,
   const dark = variant !== 'ghost';
   return (
     <Pressable
-      onPress={disabled ? undefined : onPress}
+      onPress={
+        disabled
+          ? undefined
+          : () => {
+              AudioManager.unlock();
+              AudioManager.play('ui');
+              onPress();
+            }
+      }
       style={({ pressed }) => [
         styles.wrap,
         style,

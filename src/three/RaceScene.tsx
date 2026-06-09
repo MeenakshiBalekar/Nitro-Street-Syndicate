@@ -1,13 +1,16 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { AudioManager } from '../audio/AudioManager';
 import { getBike } from '../game/bikes';
 import { consumeCameraToggle, input } from '../game/input';
 import { RaceController } from '../game/race';
+import type { RacePhase } from '../game/types';
 import { useHudStore } from '../state/hudStore';
 import { damp } from '../util/math';
 import Bike3D, { BikeHandle } from './Bike3D';
 import Environment3D from './Environment3D';
+import ParticleFX, { ParticleHandle } from './ParticleFX';
 import Track3D from './Track3D';
 import Traffic3D, { TrafficHandle } from './Traffic3D';
 
@@ -22,15 +25,27 @@ export default function RaceScene({ controller, onFinish }: Props) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const bikeHandles = useRef<(BikeHandle | null)[]>([]);
   const trafficHandle = useRef<TrafficHandle | null>(null);
+  const particles = useRef<ParticleHandle | null>(null);
 
   const hudAccum = useRef(0);
   const finishTimer = useRef(-1);
   const tmp = useMemo(() => ({ desired: new THREE.Vector3(), look: new THREE.Vector3() }), []);
 
+  // Edge-detection state for one-shot audio/VFX triggers.
+  const prevPhase = useRef<RacePhase>('countdown');
+  const prevCountInt = useRef(99);
+  const prevShake = useRef(0);
+  const prevNitro = useRef(false);
+
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 20);
 
-    // Edge-triggered camera toggle (web key / HUD button).
+    // Frozen while paused: keep rendering the last frame, idle the engine sound.
+    if (controller.paused) {
+      AudioManager.setEngine(0, false);
+      return;
+    }
+
     if (consumeCameraToggle()) {
       const cur = useHudStore.getState().camMode;
       useHudStore.getState().setCamMode(cur === 'chase' ? 'cockpit' : 'chase');
@@ -38,7 +53,6 @@ export default function RaceScene({ controller, onFinish }: Props) {
 
     controller.tick(dt, input);
 
-    // Push simulated transforms into the meshes.
     const racers = controller.racers;
     for (let i = 0; i < racers.length; i++) bikeHandles.current[i]?.sync(racers[i]);
     trafficHandle.current?.sync();
@@ -60,7 +74,6 @@ export default function RaceScene({ controller, onFinish }: Props) {
       tmp.look.set(p.worldX + fx * 7, p.worldY + 1.2, p.worldZ + fz * 7);
     }
 
-    // Crash shake.
     if (controller.shake > 0) {
       const a = controller.shake * 0.6;
       tmp.desired.x += (Math.random() - 0.5) * a;
@@ -79,6 +92,46 @@ export default function RaceScene({ controller, onFinish }: Props) {
       camera.updateProjectionMatrix();
     }
 
+    // --- Audio (engine + one-shot SFX on edges) -------------------------
+    const phase = controller.phase;
+    if (prevPhase.current !== 'racing' && phase === 'racing') {
+      AudioManager.unlock();
+      AudioManager.startEngine();
+      AudioManager.play('go');
+    }
+    if (prevPhase.current !== 'finished' && phase === 'finished') {
+      AudioManager.play('finish');
+      AudioManager.stopEngine();
+    }
+    if (phase === 'countdown') {
+      const ci = Math.ceil(controller.countdownMs / 1000);
+      if (ci !== prevCountInt.current) {
+        prevCountInt.current = ci;
+        if (ci > 0 && ci <= 3) AudioManager.play('countdown');
+      }
+    }
+    if (phase === 'racing') AudioManager.setEngine(speedRatio, p.nitroActive);
+    if (p.nitroActive && !prevNitro.current) AudioManager.play('nitro');
+    if (controller.shake > 0.6 && prevShake.current <= 0.6) AudioManager.play('crash');
+    prevPhase.current = phase;
+    prevNitro.current = p.nitroActive;
+
+    // --- Particle VFX ----------------------------------------------------
+    const rx = p.worldX - fx * 1.2;
+    const rz = p.worldZ - fz * 1.2;
+    const ry = p.worldY + 0.4;
+    if (p.nitroActive) particles.current?.emit(rx, ry, rz, 'nitro', 2);
+    const offRoad = Math.abs(p.lateral) > controller.track.halfWidth;
+    const hardSteer = Math.abs(input.steer) > 0.6 && speedRatio > 0.5;
+    if ((input.brake > 0.3 || offRoad || hardSteer) && p.speed > 40) {
+      particles.current?.emit(rx, p.worldY + 0.25, rz, 'dust', 2);
+    }
+    if (controller.shake > 0.6 && prevShake.current <= 0.6) {
+      particles.current?.emit(p.worldX, p.worldY + 0.4, p.worldZ, 'spark', 12);
+    }
+    prevShake.current = controller.shake;
+    particles.current?.update(dt, camera);
+
     // --- HUD publish (throttled) ----------------------------------------
     hudAccum.current += dt;
     if (hudAccum.current >= 1 / 15) {
@@ -92,7 +145,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
       else {
         finishTimer.current += dt;
         if (finishTimer.current > 2.6) {
-          finishTimer.current = Number.POSITIVE_INFINITY; // guard against repeat
+          finishTimer.current = Number.POSITIVE_INFINITY;
           onFinish();
         }
       }
@@ -115,6 +168,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
           isPlayer={r.isPlayer}
         />
       ))}
+      <ParticleFX ref={particles} />
     </>
   );
 }

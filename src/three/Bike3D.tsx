@@ -19,6 +19,7 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
   const root = useRef<THREE.Group>(null);
   const frontSpin = useRef<THREE.Group>(null);
   const rearSpin = useRef<THREE.Group>(null);
+  const flame = useRef<THREE.Group>(null);
 
   useImperativeHandle(
     ref,
@@ -30,6 +31,14 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
         g.rotation.set(r.pitch, r.heading, r.lean, 'YXZ');
         if (frontSpin.current) frontSpin.current.rotation.x = r.wheelSpin;
         if (rearSpin.current) rearSpin.current.rotation.x = r.wheelSpin;
+        const fl = flame.current;
+        if (fl) {
+          fl.visible = r.nitroActive;
+          if (r.nitroActive) {
+            const flick = 0.75 + Math.random() * 0.6;
+            fl.scale.set(1, 1, flick * (0.8 + Math.min(1, r.speed / 240)));
+          }
+        }
       },
     }),
     [],
@@ -85,6 +94,18 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
         <boxGeometry args={[0.34, 0.18, 0.5]} />
         <meshStandardMaterial color={accent} metalness={0.4} roughness={0.5} />
       </mesh>
+
+      {/* Nitro exhaust flame (toggled by sync when nitro is active) */}
+      <group ref={flame} position={[0, 0.5, -1.25]} visible={false}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <coneGeometry args={[0.26, 1.4, 10, 1, true]} />
+          <meshBasicMaterial color="#FF6A12" transparent opacity={0.85} blending={THREE.AdditiveBlending} toneMapped={false} depthWrite={false} />
+        </mesh>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -0.1]}>
+          <coneGeometry args={[0.13, 1.0, 8, 1, true]} />
+          <meshBasicMaterial color="#FFE27A" transparent opacity={0.95} blending={THREE.AdditiveBlending} toneMapped={false} depthWrite={false} />
+        </mesh>
+      </group>
 
       {/* Rider */}
       <group position={[0, 0, -0.05]}>
