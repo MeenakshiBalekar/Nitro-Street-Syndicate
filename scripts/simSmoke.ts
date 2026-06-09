@@ -21,12 +21,14 @@ function check(cond: boolean, msg: string): void {
   }
 }
 
-console.log('Simulating a full race (player = Striker, full throttle vs 3 AI)...\n');
+console.log('Simulating a full race (player = Striker vs 3 AI)...\n');
 
 const c = new RaceController('striker');
 c.start();
 
-const input: InputState = { steer: 0, throttle: 1, brake: 0, nitro: false, stunt: false };
+// Deliberately leave throttle at 0: the player bike must move via the auto-throttle
+// assist inside RaceController.tick. This guards the "my bike won't move" bug.
+const input: InputState = { steer: 0, throttle: 0, brake: 0, nitro: false, stunt: false };
 const dt = 1 / 60;
 const maxSeconds = 240;
 let simSeconds = 0;

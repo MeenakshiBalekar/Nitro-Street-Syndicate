@@ -78,7 +78,7 @@ export class RaceController {
       const bikeId = pool[i % pool.length] ?? BIKES[(i + 1) % BIKES.length].id;
       const r = makeRacer(false, AI_NAMES[i], bikeId, START_LANES[i + 1], 4 - i * 2);
       this.racers.push(r);
-      this.ai.push({ racer: r, driver: new AIDriver(0.9 + i * 0.02, (i + 1) * 0.37) });
+      this.ai.push({ racer: r, driver: new AIDriver(0.86 + i * 0.02, (i + 1) * 0.37) });
     }
 
     this.traffic = new TrafficSystem(this.track.length);
@@ -145,7 +145,7 @@ export class RaceController {
       const nearLane = latDiff < car.width / 2 + 2.6;
 
       if (longHit && hitLane && this.hitCooldown <= 0 && p.worldY < 0.5) {
-        p.speed *= 0.42;
+        p.speed *= 0.6;
         p.nitro = clamp01(p.nitro - 0.1);
         this.hitCooldown = 0.8;
         this.shake = 1;
@@ -190,14 +190,19 @@ export class RaceController {
 
     this.clockMs += dt * 1000;
 
-    // Player.
-    const res = stepBike(this.player, getBike(this.player.bikeId), input, this.track, dt);
+    // Player. Throttle is automatic (assist): full unless the player is braking.
+    // The UI only sends steer / brake / nitro / stunt, so we derive throttle here
+    // rather than trusting the caller to set it.
+    const playerInput: InputState = { ...input, throttle: input.brake > 0.05 ? 0 : 1 };
+    const res = stepBike(this.player, getBike(this.player.bikeId), playerInput, this.track, dt);
     if (res.event) this.setCombo(res.event);
 
     // AI — rubber-band toward the player's progress to keep the pack tight.
     for (const { racer, driver } of this.ai) {
+      // Two-way rubber-band: leaders ease off, trailers (often the player on the
+      // starter bike) get a real catch-up so the first race stays winnable.
       const lead = racer.progress - this.player.progress;
-      const rubber = clamp(1 - lead / 600, 0.92, 1.07);
+      const rubber = clamp(1 - lead / 350, 0.85, 1.12);
       driver.update(racer, getBike(racer.bikeId), this.track, dt, rubber);
     }
 
