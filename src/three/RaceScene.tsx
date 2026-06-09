@@ -10,6 +10,7 @@ import { useHudStore } from '../state/hudStore';
 import { damp } from '../util/math';
 import Bike3D, { BikeHandle } from './Bike3D';
 import Environment3D from './Environment3D';
+import GhostBike3D, { GhostHandle } from './GhostBike3D';
 import ParticleFX, { ParticleHandle } from './ParticleFX';
 import Track3D from './Track3D';
 import Traffic3D, { TrafficHandle } from './Traffic3D';
@@ -25,6 +26,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const bikeHandles = useRef<(BikeHandle | null)[]>([]);
   const trafficHandle = useRef<TrafficHandle | null>(null);
+  const ghostHandle = useRef<GhostHandle | null>(null);
   const particles = useRef<ParticleHandle | null>(null);
 
   const hudAccum = useRef(0);
@@ -56,6 +58,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
     const racers = controller.racers;
     for (let i = 0; i < racers.length; i++) bikeHandles.current[i]?.sync(racers[i]);
     trafficHandle.current?.sync();
+    ghostHandle.current?.sync(controller.ghostState);
 
     // --- Camera ----------------------------------------------------------
     const p = controller.player;
@@ -168,6 +171,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
           isPlayer={r.isPlayer}
         />
       ))}
+      <GhostBike3D ref={ghostHandle} />
       <ParticleFX ref={particles} />
     </>
   );

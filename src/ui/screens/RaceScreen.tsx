@@ -22,6 +22,7 @@ export default function RaceScreen() {
   const finishRace = useUIStore((s) => s.finishRace);
   const go = useUIStore((s) => s.go);
   const recordResult = useGameStore((s) => s.recordResult);
+  const saveGhost = useGameStore((s) => s.saveGhost);
   const bestTimes = useGameStore((s) => s.bestTimes);
 
   const bikeId = raceBikeId ?? selectedBikeId;
@@ -29,7 +30,10 @@ export default function RaceScreen() {
   const [paused, setPaused] = useState(false);
 
   const controller = useMemo(() => {
-    const c = new RaceController(bikeId);
+    // Read the saved ghost imperatively so saving a new one doesn't recreate
+    // the controller mid-run.
+    const ghost = useGameStore.getState().ghosts['coastal'];
+    const c = new RaceController(bikeId, ghost?.data);
     c.start();
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,6 +100,7 @@ export default function RaceScreen() {
     const prevBest = bestTimes['coastal'];
     const newRecord = placement === 1 && (prevBest == null || player.finishTimeMs < prevBest);
     recordResult({ timeMs: player.finishTimeMs, reward, placement });
+    if (player.finished) saveGhost('coastal', player.finishTimeMs, controller.getRecording());
     finishRace({
       order,
       playerPlacement: placement,

@@ -16,6 +16,7 @@ interface Persisted {
   ownedBikes: string[];
   selectedBikeId: string;
   bestTimes: Record<string, number>;
+  ghosts: Record<string, { time: number; data: number[] }>;
   settings: Settings;
   lastDailyClaim: number;
 }
@@ -27,6 +28,7 @@ interface GameState extends Persisted {
   buyBike: (id: string) => boolean;
   isOwned: (id: string) => boolean;
   recordResult: (r: { timeMs: number; reward: number; placement: number }) => void;
+  saveGhost: (trackId: string, time: number, data: number[]) => void;
   claimDaily: () => number; // returns amount granted (0 if not ready)
   setSetting: <K extends keyof Settings>(k: K, v: Settings[K]) => void;
 }
@@ -36,6 +38,7 @@ const DEFAULTS: Persisted = {
   ownedBikes: ['striker'],
   selectedBikeId: 'striker',
   bestTimes: {},
+  ghosts: {},
   settings: { haptics: true, sound: true, defaultCam: 'chase', quality: 'auto' },
   lastDailyClaim: 0,
 };
@@ -46,6 +49,7 @@ const persist = (s: Persisted) =>
     ownedBikes: s.ownedBikes,
     selectedBikeId: s.selectedBikeId,
     bestTimes: s.bestTimes,
+    ghosts: s.ghosts,
     settings: s.settings,
     lastDailyClaim: s.lastDailyClaim,
   });
@@ -89,6 +93,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         ? { ...st.bestTimes, [track]: timeMs }
         : st.bestTimes;
     set({ currency: st.currency + reward, bestTimes });
+    persist(get());
+  },
+
+  saveGhost: (trackId, time, data) => {
+    const st = get();
+    const prev = st.ghosts[trackId];
+    if (data.length < 7) return;
+    if (prev && prev.time <= time) return; // keep the faster ghost
+    set({ ghosts: { ...st.ghosts, [trackId]: { time, data } } });
     persist(get());
   },
 

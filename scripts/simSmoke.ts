@@ -75,6 +75,19 @@ for (const r of results) {
   console.log(`  ${r.placement}. ${who.padEnd(6)} ${r.bikeId.padEnd(9)} ${time}`);
 }
 
+// --- Ghost record -> replay round-trip --------------------------------------
+const recording = c.getRecording();
+check(recording.length >= 7, 'ghost recording captured frames');
+const replay = new RaceController('striker', recording);
+replay.start();
+const idle: InputState = { steer: 0, throttle: 0, brake: 0, nitro: false, stunt: false };
+for (let i = 0; i < 600; i++) replay.tick(1 / 60, idle);
+check(replay.ghostState.active, 'ghost is active when a recording is supplied');
+check(
+  Number.isFinite(replay.ghostState.worldX) && Number.isFinite(replay.ghostState.worldZ),
+  'replayed ghost world position is finite',
+);
+
 console.log('');
 if (failures === 0) {
   console.log('✅ SIM SMOKE TEST PASSED');

@@ -102,4 +102,6 @@ export interface HudSnapshot {
   drafting: boolean;
   flash: number; // 0..1 crash flash intensity
   conditions: string; // time-of-day + weather label
+  ghostActive: boolean;
+  ghostDelta: number; // player.progress - ghost.progress (+ ahead)
 }

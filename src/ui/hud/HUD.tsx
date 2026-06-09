@@ -70,6 +70,22 @@ function Countdown() {
   );
 }
 
+function Ghost() {
+  const active = useHudStore((s) => s.ghostActive);
+  const delta = useHudStore((s) => s.ghostDelta);
+  const phase = useHudStore((s) => s.phase);
+  if (!active || phase !== 'racing') return null;
+  const ahead = delta >= 0;
+  const meters = Math.abs(Math.round(delta));
+  return (
+    <View style={styles.ghostWrap} pointerEvents="none">
+      <Text style={[styles.ghostText, { color: ahead ? Colors.success : Colors.danger }]}>
+        {`◇ GHOST  ${ahead ? '▲' : '▼'} ${meters}m`}
+      </Text>
+    </View>
+  );
+}
+
 function Draft() {
   const drafting = useHudStore((s) => s.drafting);
   if (!drafting) return null;
@@ -99,6 +115,7 @@ export default function HUD({ controller, onPause }: Props) {
         <Countdown />
       </View>
 
+      <Ghost />
       <Draft />
 
       <View style={styles.bottomCenter} pointerEvents="none">
@@ -165,6 +182,18 @@ const styles = StyleSheet.create({
   countSub: { fontFamily: Type.display, fontSize: Type.size.lg, fontWeight: '900', color: Colors.text, letterSpacing: 4 },
   conditions: { fontFamily: Type.display, fontSize: Type.size.md, fontWeight: '900', color: Colors.cyan, letterSpacing: 4, marginBottom: 6 },
   bottomCenter: { position: 'absolute', bottom: 18, left: 0, right: 0, alignItems: 'center' },
+  ghostWrap: { position: 'absolute', top: 84, left: 0, right: 0, alignItems: 'center' },
+  ghostText: {
+    fontFamily: Type.mono,
+    fontSize: Type.size.sm,
+    fontWeight: '900',
+    letterSpacing: 2,
+    backgroundColor: 'rgba(8,12,22,0.6)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    overflow: 'hidden',
+  },
   draft: { position: 'absolute', bottom: 118, left: 0, right: 0, alignItems: 'center' },
   draftText: {
     fontFamily: Type.display,

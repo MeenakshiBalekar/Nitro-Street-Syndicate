@@ -23,6 +23,8 @@ export const EMPTY_HUD: HudSnapshot = {
   drafting: false,
   flash: 0,
   conditions: '',
+  ghostActive: false,
+  ghostDelta: 0,
 };
 
 interface HudState extends HudSnapshot {

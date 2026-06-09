@@ -5,6 +5,7 @@ import { input as sharedInput } from './input';
 import { stepBike } from './physics';
 import { COASTAL_TRACK, START_LANES, TOTAL_LAPS, TrackModel } from './track';
 import { TrafficSystem } from './traffic';
+import { GhostPlayer, GhostRecorder, GhostState } from './ghost';
 import { HudSnapshot, InputState, RacePhase, RacerState } from './types';
 import { pickWorld, WorldMood } from './world';
 
@@ -74,10 +75,23 @@ export class RaceController {
   private hitCooldown = 0;
   private draftLatch = false;
 
-  constructor(playerBikeId: string) {
+  // Ghost racing.
+  private recorder = new GhostRecorder();
+  private ghost: GhostPlayer | null = null;
+  private ghostProgress = 0;
+  readonly ghostState: GhostState = {
+    active: false, worldX: 0, worldY: 0, worldZ: 0, heading: 0, lean: 0, pitch: 0, spin: 0,
+  };
+
+  constructor(playerBikeId: string, ghostData?: number[]) {
     // Pole for the player, AI fill the rest of the grid slightly behind.
     this.player = makeRacer(true, 'You', playerBikeId, START_LANES[0], 6);
     this.racers.push(this.player);
+
+    if (ghostData && ghostData.length >= 7) {
+      this.ghost = new GhostPlayer(ghostData);
+      this.ghostState.active = true;
+    }
 
     const pool = BIKES.map((b) => b.id).filter((id) => id !== playerBikeId);
     for (let i = 0; i < 3; i++) {
@@ -90,7 +104,28 @@ export class RaceController {
     this.traffic = new TrafficSystem(this.track.length);
     this.nearActive = new Array(this.traffic.vehicles.length).fill(false);
     this.racers.forEach((r) => this.computeWorld(r));
+    this.updateGhost(0);
     this.updatePlacements();
+  }
+
+  // Place the ghost from its recording at race time `tMs`.
+  private updateGhost(tMs: number): void {
+    if (!this.ghost) return;
+    const g = this.ghost.sample(tMs);
+    if (!g) return;
+    this.ghostProgress = g.progress;
+    const sm = this.track.sample(g.progress);
+    this.ghostState.worldX = sm.x + sm.nx * g.lateral;
+    this.ghostState.worldZ = sm.z + sm.nz * g.lateral;
+    this.ghostState.worldY = g.y;
+    this.ghostState.heading = Math.atan2(sm.tx, sm.tz) + g.lean * 0.25;
+    this.ghostState.lean = g.lean;
+    this.ghostState.pitch = g.pitch;
+    this.ghostState.spin = g.spin;
+  }
+
+  getRecording(): number[] {
+    return this.recorder.data();
   }
 
   start(): void {
@@ -248,6 +283,10 @@ export class RaceController {
     }
     this.updatePlacements();
 
+    // Record this run and replay the loaded ghost (visual only).
+    this.recorder.record(dt, this.clockMs, this.player);
+    this.updateGhost(this.clockMs);
+
     if (this.comboTimer > 0) {
       this.comboTimer -= dt;
       if (this.comboTimer <= 0) this.comboLabel = null;
@@ -283,6 +322,8 @@ export class RaceController {
       drafting: this.drafting,
       flash: this.flash,
       conditions: this.world.name,
+      ghostActive: !!this.ghost,
+      ghostDelta: this.ghost ? p.progress - this.ghostProgress : 0,
     };
   }
 
