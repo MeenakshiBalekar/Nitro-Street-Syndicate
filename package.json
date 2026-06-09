@@ -15,6 +15,7 @@
     "@react-native-async-storage/async-storage": "^3.1.1",
     "@react-three/fiber": "9.6.1",
     "expo": "~56.0.9",
+    "expo-audio": "^56.0.7",
     "expo-gl": "^56.0.5",
     "expo-haptics": "^56.0.3",
     "expo-linear-gradient": "^56.0.4",
@@ -30,9 +31,11 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "@types/three": "0.184.1",
+    "@types/ws": "^8.18.1",
     "babel-preset-expo": "^56.0.14",
     "tsx": "^4.22.4",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "ws": "^8.21.0"
   },
   "private": true
 }
