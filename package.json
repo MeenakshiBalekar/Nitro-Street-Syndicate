@@ -7,7 +7,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:sim": "tsx scripts/simSmoke.ts",
+    "test": "npm run typecheck && npm run test:sim"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",
@@ -29,6 +31,7 @@
     "@types/react": "~19.2.2",
     "@types/three": "0.184.1",
     "babel-preset-expo": "^56.0.14",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.3"
   },
   "private": true
