@@ -59,9 +59,11 @@ function Combo() {
 function Countdown() {
   const phase = useHudStore((s) => s.phase);
   const n = useHudStore((s) => s.countdown);
+  const conditions = useHudStore((s) => s.conditions);
   if (phase !== 'countdown') return null;
   return (
     <View style={styles.countWrap} pointerEvents="none">
+      {conditions ? <Text style={styles.conditions}>{conditions}</Text> : null}
       <Text style={styles.countNum}>{n > 0 ? n : 'GO!'}</Text>
       <Text style={styles.countSub}>{n > 0 ? 'GET READY' : ''}</Text>
     </View>
@@ -161,6 +163,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 24,
   },
   countSub: { fontFamily: Type.display, fontSize: Type.size.lg, fontWeight: '900', color: Colors.text, letterSpacing: 4 },
+  conditions: { fontFamily: Type.display, fontSize: Type.size.md, fontWeight: '900', color: Colors.cyan, letterSpacing: 4, marginBottom: 6 },
   bottomCenter: { position: 'absolute', bottom: 18, left: 0, right: 0, alignItems: 'center' },
   draft: { position: 'absolute', bottom: 118, left: 0, right: 0, alignItems: 'center' },
   draftText: {

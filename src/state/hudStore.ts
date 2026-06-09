@@ -22,6 +22,7 @@ export const EMPTY_HUD: HudSnapshot = {
   comboTimer: 0,
   drafting: false,
   flash: 0,
+  conditions: '',
 };
 
 interface HudState extends HudSnapshot {

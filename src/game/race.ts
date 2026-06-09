@@ -6,6 +6,7 @@ import { stepBike } from './physics';
 import { COASTAL_TRACK, START_LANES, TOTAL_LAPS, TrackModel } from './track';
 import { TrafficSystem } from './traffic';
 import { HudSnapshot, InputState, RacePhase, RacerState } from './types';
+import { pickWorld, WorldMood } from './world';
 
 const COUNTDOWN_MS = 3300;
 const AI_NAMES = ['Rogue', 'Apex', 'Nyx'];
@@ -55,6 +56,7 @@ export class RaceController {
   readonly racers: RacerState[] = [];
   readonly traffic: TrafficSystem;
   readonly totalLaps = TOTAL_LAPS;
+  readonly world: WorldMood = pickWorld();
 
   phase: RacePhase = 'countdown';
   paused = false; // set by the race screen; the render loop skips ticking while true
@@ -280,6 +282,7 @@ export class RaceController {
       comboTimer: this.comboTimer,
       drafting: this.drafting,
       flash: this.flash,
+      conditions: this.world.name,
     };
   }
 

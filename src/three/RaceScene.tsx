@@ -154,7 +154,7 @@ export default function RaceScene({ controller, onFinish }: Props) {
 
   return (
     <>
-      <Environment3D track={controller.track} />
+      <Environment3D track={controller.track} mood={controller.world} />
       <Track3D track={controller.track} />
       <Traffic3D ref={trafficHandle} vehicles={controller.traffic.vehicles} track={controller.track} />
       {controller.racers.map((r, i) => (

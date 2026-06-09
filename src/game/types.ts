@@ -101,4 +101,5 @@ export interface HudSnapshot {
   comboTimer: number;
   drafting: boolean;
   flash: number; // 0..1 crash flash intensity
+  conditions: string; // time-of-day + weather label
 }

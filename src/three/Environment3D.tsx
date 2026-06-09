@@ -1,14 +1,18 @@
 import React, { useMemo } from 'react';
 import { Colors } from '../theme/colors';
 import { TrackModel } from '../game/track';
+import { WorldMood } from '../game/world';
 
 interface Props {
   track: TrackModel;
+  mood: WorldMood;
 }
 
 const BUILDING_COLORS = ['#3A4154', '#2C3346', '#454D63', '#5A6178', '#343B4F'];
 
-export default function Environment3D({ track }: Props) {
+export default function Environment3D({ track, mood }: Props) {
+  // Windows glow brighter when it is dark out.
+  const windowGlow = mood.stars ? 1.0 : mood.rain ? 0.35 : 0.1;
   const buildings = useMemo(() => {
     const out: {
       x: number;
@@ -58,10 +62,10 @@ export default function Environment3D({ track }: Props) {
 
   return (
     <group>
-      {/* Grass ground */}
+      {/* Ground (tinted by time of day) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, 0]} receiveShadow>
         <planeGeometry args={[3000, 3000]} />
-        <meshStandardMaterial color={Colors.grass} roughness={1} />
+        <meshStandardMaterial color={mood.ground} roughness={1} />
       </mesh>
       {/* Distant sea ring for the coastal horizon */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.2, 0]}>
@@ -70,10 +74,22 @@ export default function Environment3D({ track }: Props) {
       </mesh>
 
       {buildings.map((b, i) => (
-        <mesh key={`b${i}`} position={[b.x, b.h / 2, b.z]} rotation={[0, b.rot, 0]} castShadow>
-          <boxGeometry args={[b.w, b.h, b.d]} />
-          <meshStandardMaterial color={b.color} roughness={0.8} metalness={0.2} />
-        </mesh>
+        <group key={`b${i}`} position={[b.x, b.h / 2, b.z]} rotation={[0, b.rot, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshStandardMaterial color={b.color} roughness={0.8} metalness={0.2} />
+          </mesh>
+          {/* lit windows — glow scales with darkness */}
+          <mesh position={[0, 0, b.d / 2 + 0.05]}>
+            <planeGeometry args={[b.w * 0.7, b.h * 0.7]} />
+            <meshStandardMaterial
+              color="#FFE9A8"
+              emissive="#FFD27A"
+              emissiveIntensity={windowGlow}
+              roughness={0.5}
+            />
+          </mesh>
+        </group>
       ))}
 
       {palms.map((p, i) => (
