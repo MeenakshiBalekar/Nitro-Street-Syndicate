@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Nitro Street Syndicate",
+    "slug": "nitro-street-syndicate",
+    "version": "0.1.0",
+    "orientation": "landscape",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#070912",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#070912"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nitrostreet.app"
+    },
+    "android": {
+      "package": "com.nitrostreet.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#070912"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
+      "baseUrl": "/Nitro-Street-Syndicate"
+    }
+  }
+}
