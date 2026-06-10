@@ -5,6 +5,7 @@ import { useHudStore } from '../../state/hudStore';
 import { Colors } from '../../theme/colors';
 import { Type } from '../../theme/typography';
 import { formatTime, ordinal } from '../../util/math';
+import AnalogDashboard from './AnalogDashboard';
 import CockpitOverlay from './CockpitOverlay';
 import Minimap from './Minimap';
 import SpeedFX from './SpeedFX';
@@ -97,6 +98,11 @@ function Draft() {
   );
 }
 
+function BottomGauge() {
+  const cam = useHudStore((s) => s.camMode);
+  return cam === 'cockpit' ? <AnalogDashboard /> : <Speedometer />;
+}
+
 export default function HUD({ controller, onPause }: Props) {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -121,7 +127,7 @@ export default function HUD({ controller, onPause }: Props) {
       <Draft />
 
       <View style={styles.bottomCenter} pointerEvents="none">
-        <Speedometer />
+        <BottomGauge />
       </View>
 
       <TouchControls />

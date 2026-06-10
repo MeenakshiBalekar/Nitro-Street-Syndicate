@@ -38,12 +38,9 @@ export default function CockpitOverlay() {
       {/* grips */}
       <View style={[styles.grip, { left: '7%' }]} />
       <View style={[styles.grip, { right: '7%' }]} />
-
-      {/* central instrument binnacle (the Speedometer renders on top of this) */}
-      <View style={styles.binnacle}>
-        <LinearGradient colors={['#161C2A', '#080B12']} style={StyleSheet.absoluteFill} />
-        <View style={styles.binnacleRim} />
-      </View>
+      {/* brake & clutch levers */}
+      <View style={[styles.lever, { left: '13%', transform: [{ rotate: '22deg' }] }]} />
+      <View style={[styles.lever, { right: '13%', transform: [{ rotate: '-22deg' }] }]} />
     </View>
   );
 }
@@ -76,27 +73,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255,210,63,0.4)',
   },
-  binnacle: {
+  lever: {
     position: 'absolute',
-    bottom: 0,
-    alignSelf: 'center',
-    left: '50%',
-    marginLeft: -150,
-    width: 300,
-    height: 120,
-    borderTopLeftRadius: 150,
-    borderTopRightRadius: 150,
-    overflow: 'hidden',
-    borderTopWidth: 2,
-    borderColor: 'rgba(46,230,214,0.3)',
-  },
-  binnacleRim: {
-    position: 'absolute',
-    top: 6,
-    left: '20%',
-    right: '20%',
-    height: 2,
-    backgroundColor: 'rgba(46,230,214,0.4)',
-    borderRadius: 1,
+    bottom: '15%',
+    width: 70,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#11151F',
+    borderWidth: 1,
+    borderColor: 'rgba(180,190,210,0.3)',
   },
 });
