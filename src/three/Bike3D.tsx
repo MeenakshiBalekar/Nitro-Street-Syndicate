@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { RacerState } from '../game/types';
 
 export interface BikeHandle {
-  sync: (r: RacerState) => void;
+  sync: (r: RacerState, visible?: boolean) => void;
 }
 
 interface Props {
@@ -24,9 +24,11 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
   useImperativeHandle(
     ref,
     () => ({
-      sync(r: RacerState) {
+      sync(r: RacerState, visible = true) {
         const g = root.current;
         if (!g) return;
+        g.visible = visible;
+        if (!visible) return;
         g.position.set(r.worldX, r.worldY, r.worldZ);
         g.rotation.set(r.pitch, r.heading, r.lean, 'YXZ');
         if (frontSpin.current) frontSpin.current.rotation.x = r.wheelSpin;
@@ -46,6 +48,9 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
 
   const tire = '#15171C';
   const rim = isPlayer ? '#FFFFFF' : '#C8CCD8';
+  // Self-illumination keeps the bike from reading as a black silhouette and
+  // gives it a bloom-able sheen — strongest on the player's bike.
+  const glow = isPlayer ? 0.5 : 0.22;
 
   return (
     <group ref={root}>
@@ -74,16 +79,16 @@ const Bike3D = forwardRef<BikeHandle, Props>(({ color, accent, isPlayer }, ref) 
       {/* Chassis / tank / fairing */}
       <mesh position={[0, 0.72, -0.05]} castShadow>
         <boxGeometry args={[0.42, 0.34, 1.9]} />
-        <meshStandardMaterial color={color} metalness={0.55} roughness={0.35} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={glow} metalness={0.7} roughness={0.3} />
       </mesh>
       <mesh position={[0, 0.92, 0.25]} rotation={[0.25, 0, 0]} castShadow>
         <boxGeometry args={[0.4, 0.28, 0.8]} />
-        <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={glow} metalness={0.75} roughness={0.25} />
       </mesh>
       {/* Front fairing + headlight */}
       <mesh position={[0, 0.78, 0.95]} rotation={[0.5, 0, 0]} castShadow>
         <boxGeometry args={[0.46, 0.5, 0.4]} />
-        <meshStandardMaterial color={accent} metalness={0.5} roughness={0.4} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={glow * 0.7} metalness={0.6} roughness={0.35} />
       </mesh>
       <mesh position={[0, 0.86, 1.16]}>
         <boxGeometry args={[0.26, 0.16, 0.08]} />

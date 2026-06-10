@@ -55,8 +55,14 @@ export default function RaceScene({ controller, onFinish }: Props) {
 
     controller.tick(dt, input);
 
+    const cam = useHudStore.getState().camMode;
     const racers = controller.racers;
-    for (let i = 0; i < racers.length; i++) bikeHandles.current[i]?.sync(racers[i]);
+    // Hide the player's own bike in cockpit view (otherwise the dark rider back
+    // fills the screen); a 2D cockpit dashboard frames it instead.
+    for (let i = 0; i < racers.length; i++) {
+      const r = racers[i];
+      bikeHandles.current[i]?.sync(r, !(r.isPlayer && cam === 'cockpit'));
+    }
     trafficHandle.current?.sync();
     ghostHandle.current?.sync(controller.ghostState);
 
@@ -65,16 +71,16 @@ export default function RaceScene({ controller, onFinish }: Props) {
     const h = p.heading;
     const fx = Math.sin(h);
     const fz = Math.cos(h);
-    const cam = useHudStore.getState().camMode;
     const speedRatio = Math.min(1, p.speed / 240);
 
     if (cam === 'cockpit') {
-      tmp.desired.set(p.worldX + fx * 0.1, p.worldY + 1.55, p.worldZ + fz * 0.1);
-      tmp.look.set(p.worldX + fx * 14, p.worldY + 1.4, p.worldZ + fz * 14);
+      tmp.desired.set(p.worldX + fx * 0.35, p.worldY + 1.5, p.worldZ + fz * 0.35);
+      tmp.look.set(p.worldX + fx * 14, p.worldY + 1.35, p.worldZ + fz * 14);
     } else {
-      const dist = 7.5 + speedRatio * 1.5;
-      tmp.desired.set(p.worldX - fx * dist, p.worldY + 3.4, p.worldZ - fz * dist);
-      tmp.look.set(p.worldX + fx * 7, p.worldY + 1.2, p.worldZ + fz * 7);
+      // Closer + lower so the bike has real presence in frame.
+      const dist = 5.6 + speedRatio * 1.4;
+      tmp.desired.set(p.worldX - fx * dist, p.worldY + 2.5, p.worldZ - fz * dist);
+      tmp.look.set(p.worldX + fx * 4.5, p.worldY + 0.9, p.worldZ + fz * 4.5);
     }
 
     if (controller.shake > 0) {

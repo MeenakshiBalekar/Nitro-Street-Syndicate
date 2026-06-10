@@ -5,6 +5,7 @@ import { useHudStore } from '../../state/hudStore';
 import { Colors } from '../../theme/colors';
 import { Type } from '../../theme/typography';
 import { formatTime, ordinal } from '../../util/math';
+import CockpitOverlay from './CockpitOverlay';
 import Minimap from './Minimap';
 import SpeedFX from './SpeedFX';
 import Speedometer from './Speedometer';
@@ -100,6 +101,7 @@ export default function HUD({ controller, onPause }: Props) {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <SpeedFX />
+      <CockpitOverlay />
       <View style={styles.topLeft} pointerEvents="none">
         <Minimap controller={controller} />
       </View>
