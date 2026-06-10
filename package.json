@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test:sim": "tsx scripts/simSmoke.ts",
-    "test": "npm run typecheck && npm run test:sim"
+    "test:net": "tsx scripts/netSmoke.ts",
+    "test": "npm run typecheck && npm run test:sim",
+    "relay": "node server/relay.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",
