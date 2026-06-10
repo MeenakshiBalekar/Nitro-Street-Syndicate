@@ -22,11 +22,13 @@ npm run ios      # or: npm run android  (Expo Go / dev build on a device)
 > Real 3D on a phone runs best on a physical device (simulators are weak at WebGL/EXGL).
 > The web build is the quickest preview.
 
-Type-check / bundle:
+Verify (no device needed — these all run headless / in this repo):
 
 ```bash
-npm run typecheck            # tsc --noEmit
-npx expo export -p web       # produces dist/ (verified building)
+npm test                     # tsc --noEmit + headless race sim (incl. ghost round-trip)
+npm run test:net             # boots the relay + 2 clients, checks room/snapshot/disconnect
+npm run relay                # run the online relay locally (ws://localhost:8787)
+npx expo export -p web       # produce a web build in dist/
 ```
 
 ## Controls
@@ -102,17 +104,21 @@ nitro, wheelie, ramps/jumps, traffic + near-miss + collisions, chase/cockpit cam
 crash shake, HUD (minimap, speed cluster, lap/time/position, combos), pause/resume/restart,
 results + rematch, currency rewards, unlock progression, daily bonus, persistent save.
 
-✅ **Phase 2 — premium feel:** procedural engine audio (pitch-by-speed) + nitro/crash/UI SFX
-(Web Audio, web only), nitro exhaust flame, pooled skid-dust / spark particles, 2D speed-lines +
-cinematic vignette, **slipstream** drafting boost, crash flash, and per-screen entrance transitions.
+✅ **Phase 2 — premium feel:** procedural engine audio (pitch-by-speed) + nitro/crash/UI SFX,
+nitro exhaust flame, pooled skid-dust / spark particles, 2D speed-lines + cinematic vignette,
+**slipstream** drafting boost, crash flash, and per-screen entrance transitions.
 
-🟡 **Stubbed on purpose (architecture seam present):**
+✅ **Phase 3 (so far):** **native audio** (expo-audio + synthesized samples; web still uses the
+Web Audio synth), **day/night + weather** moods (clear/sunset/night × clear/storm) driving sky,
+fog, lighting, 3D rain and a star field, and **ghost racing** (record, persist your best, race a
+translucent replay with an ahead/behind delta).
 
-- **Online 4-player** — `src/net/Multiplayer.ts` defines the transport interface; the race is
-  built host-authoritative so a real backend (Photon / Colyseus / Nakama / WS relay) drops in
-  without touching gameplay. The menu's **ONLINE** button explains this.
-- **Native audio** — the synthesized engine/SFX run on web via the Web Audio API; on iOS/Android
-  `AudioManager` is a safe no-op. Wire it to `expo-audio` + sample files to enable on device.
+🟡 **Online 4-player — foundation built & tested, not yet internet-playable:**
+
+- ✅ `server/relay.mjs` (WebSocket relay) + `src/net/WsTransport.ts` (implements the
+  `NetTransport` seam) + `npm run test:net` integration test all work headlessly.
+- ⏭️ Remaining: host the relay somewhere public, then wire the lobby UI (create/join by code,
+  ready-up) and host-authoritative in-race snapshot sync. The seam means no gameplay rewrites.
 
 The 3D world uses **procedural primitives** (no external model/texture assets), which keeps the
 bundle lean and the project 100% buildable from source.
@@ -122,10 +128,11 @@ bundle lean and the project 100% buildable from source.
 ## Roadmap (phased, per the design brief)
 
 - **Phase 1 — Core ✅:** stable race loop, premium HUD, 4 bikes, nitro/stunts, traffic.
-- **Phase 2 — Premium feel ✅ (web):** engine audio (pitch-by-speed), nitro/skid VFX, speed lines,
-  slipstream, crash feedback, UI transitions. Remaining: native audio samples.
-- **Phase 3 — Wow:** online 4-player rooms + matchmaking, ghost racing, replay clips, day/night
-  & weather, custom skins/decals, ranked leaderboards, and a short free-roam map.
+- **Phase 2 — Premium feel ✅:** engine audio, nitro/skid VFX, speed lines, slipstream, crash
+  feedback, UI transitions.
+- **Phase 3 — Wow (in progress):** ✅ native audio, ✅ day/night + weather, ✅ ghost racing,
+  ✅ online networking foundation (relay + transport + tested). ⏭️ Next: lobby UI + in-race
+  online sync, then replay clips, custom skins/decals, ranked leaderboards, and a free-roam map.
 
 ## License
 
